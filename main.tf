@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
 resource "aws_iam_role" "eks_cluster_role" {
   name = "${var.project}_eks_cluster_role"
   assume_role_policy = data.aws_iam_policy_document.cluster_role_assume_role_policy.json
@@ -44,9 +53,9 @@ resource "aws_eks_node_group" "eks_node_group" {
   subnet_ids      = var.subnet_ids
 
   scaling_config {
-    desired_size = 1
-    max_size     = 2
-    min_size     = 1
+    desired_size = var.node_scale_desired_size
+    max_size     = var.node_scale_max_size
+    min_size     = var.node_scale_min_size
   }
 
   # Ensure that IAM Role permissions are created before and deleted after EKS Node Group handling.

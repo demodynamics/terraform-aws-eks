@@ -6,3 +6,6 @@ cluster_role_permissions_policy = ["AmazonEKSClusterPolicy", "AmazonEKSVPCResour
 node_group_role_assumer =  ["ec2.amazonaws.com"]
 node_group_role_permissions_policy = ["AmazonEKSWorkerNodePolicy", "AmazonEKS_CNI_Policy", "AmazonEC2ContainerRegistryReadOnly", "AmazonEC2ReadOnlyAccess"]
 subnet_ids = [""]
+node_scale_desired_size = 1
+node_scale_max_size = 2
+node_scale_min_size = 1
