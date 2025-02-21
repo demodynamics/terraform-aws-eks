@@ -8,11 +8,13 @@ terraform {
 }
 
 resource "aws_iam_role" "eks_cluster_role" {
+  description = "${var.project} EKS Cluster Role"
   name = "${var.project}_eks_cluster_role"
   assume_role_policy = data.aws_iam_policy_document.cluster_role_assume_role_policy.json
 }
 
 resource "aws_iam_role" "eks_node_group_role" {
+  description = "${var.project} EKS Node group Role"
   name = "${var.project}_eks_node_group_role"
   assume_role_policy = data.aws_iam_policy_document.node_group_role_assume_role_policy.json
 }

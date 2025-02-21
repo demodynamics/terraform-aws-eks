@@ -1,13 +1,14 @@
+# Creating a Map of Cluster Role Permissions Policy
 locals {
  cluster_role_permissions_policy =  {for idx, policy in var.cluster_role_permissions_policy: idx => policy}
 }
 
+# Creating a Map of Node group Role Permissions Policy
 locals {
  node_group_role_permissions_policy =  {for idx, policy in var.node_group_role_permissions_policy: idx => policy}
 }
 
 /*
-
   The type of brackets around the for expression ([for] and {for}) decide what type of result it produces:
    [for] produces a list: a sequence of values, like ["us-west-1a", "us-west-1c"]. Identify elements in a list with 
       consecutive whole numbers, starting with zero.
