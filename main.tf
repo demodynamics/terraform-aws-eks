@@ -10,14 +10,14 @@ resource "aws_iam_role" "eks_node_group_role" {
 
 # # # For Actions on EKS
 resource "aws_iam_role_policy_attachment" "eks_cluster_role_attachment" {
-  for_each = local.cluster_role_permissions_policy
+  for_each = local.cluster_role_permissions_policy # for_each requires a map or set. ❌for_each does not work directly on a list. ✅ Convert a list to a map if needed. ✅ Use each.key and each.value inside the resource.
   policy_arn = "arn:aws:iam::aws:policy/${each.value}"
   role       = aws_iam_role.eks_cluster_role.name
 }
 
 # # For Actions on EC2
 resource "aws_iam_role_policy_attachment" "eks_node_group_role_attachment" {
-  for_each = local.node_group_role_permissions_policy
+  for_each = local.node_group_role_permissions_policy # for_each requires a map or set. ❌for_each does not work directly on a list. ✅ Convert a list to a map if needed. ✅ Use each.key and each.value inside the resource.
   policy_arn = "arn:aws:iam::aws:policy/${each.value}"
   role       = aws_iam_role.eks_node_group_role.name
 }
