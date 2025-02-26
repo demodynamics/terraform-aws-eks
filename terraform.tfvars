@@ -9,3 +9,5 @@ subnet_ids = [""]
 node_scale_desired_size = 1
 node_scale_max_size = 2
 node_scale_min_size = 1
+node_capacity_type = "ON_DEMAND"
+node_instance_type = ["t2.micro"]

@@ -54,3 +54,11 @@ variable "subnet_ids" {
    description = "Scaling Config for EKS Node Group: Min Count Of Nodes"
    type = number
  }
+
+ variable "node_capacity_type" {
+   type = string
+ }
+
+ variable "node_instance_type" {
+   type = list(string)
+ }

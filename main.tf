@@ -53,6 +53,9 @@ resource "aws_eks_node_group" "eks_node_group" {
   node_group_name = "${var.project}_node_goup"
   node_role_arn   = aws_iam_role.eks_node_group_role.arn
   subnet_ids      = var.subnet_ids
+  
+  capacity_type  = var.node_capacity_type
+  instance_types = var.node_instance_type
 
   scaling_config {
     desired_size = var.node_scale_desired_size
