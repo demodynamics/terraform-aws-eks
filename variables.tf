@@ -56,9 +56,11 @@ variable "subnet_ids" {
  }
 
  variable "node_capacity_type" {
+   description = "Pricing and Provisioning Type of AWS EC2 instances` Node(s) : On-Demand: More expensive but reliable or Spot: Cheaper but can be interrupted or terminated by AWS"
    type = string
  }
 
  variable "node_instance_type" {
+   description = "EKS Node(s) Instance Type"
    type = list(string)
  }
