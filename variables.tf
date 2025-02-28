@@ -3,37 +3,37 @@ variable "project" {
   type = string
 }
 
-variable "policy_type" {
-  description = "Indentifier in statement block of policy that defines which type of policy will be generated: Permissions Policy or Assume Role Policy"
-  type = list(string)
-}
-
-variable "role_assumer_type" {
-  description = "Type of role assumer : What type of AWS object will be assume the role ` AWS (User or Role) or Service"
+variable "region" {
+  description = "AWS region"
   type = string
-}
-
-variable "cluster_role_assumer" {
-  description = "Identifier of Cluster Role asuumer : Who Will asume the Role" 
-  type = list(string)
-}
-
-variable "node_group_role_assumer" {
-  description = "Identifier of Node Group Role asuumer : Who Will asume the Role" 
-  type = list(string)
 }
 
 
 variable "cluster_role_permissions_policy" {
-  description = "List of permissions policy for Cluster Role"
+  description = "List of AWS managed permissions policy for Cluster Role"
   type = list(string)
 }
 
 variable "node_group_role_permissions_policy" {
-  description = "List of permissions policy for Node Group Role"
+  description = "List of AWS managed permissions policy for Node Group Role"
   type = list(string)
 }
 
+variable "service_account_name" {
+  description = "Service Account Name for IRSA that pull images from ECR Private Repository"
+  type = string
+
+}
+variable "service_account_namespace" {
+  description = "Service Account Namespace for IRSA that pull images from ECR Private Repository"
+  type = string
+}
+
+
+variable "ecr_pull_permissions_policy" {
+  description = "An AWS managed permissions policy that wiill give IRSA to pull images from ECR Private Repository "
+  type = string
+}
 
 variable "subnet_ids" {
   description = "Subnet ID's of VPC Where the cluster and it's nodes will be created"
