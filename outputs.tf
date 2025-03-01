@@ -18,3 +18,8 @@ output "eks_cluster_name" {
   description = "Name of EKS Cluster"
   value = aws_eks_cluster.eks_cluster.name
 }
+
+output "ecr_pull_service_account_name" {
+  description = "Service Account Name for Pulling Images from Private ECR"
+  value = kubernetes_service_account.ecr_pull_sa.metadata
+}

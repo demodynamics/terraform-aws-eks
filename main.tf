@@ -82,7 +82,7 @@ resource "aws_eks_node_group" "eks_node_group" {
 resource "aws_iam_role" "ecr_image_pull_irsa" {
    description = "ECR Image Pull IRSA for pods"
    name = "ecr_image_pull_irsa"
-   assume_role_policy = data.aws_iam_policy_document.irsa_assume_role_policy.json # Generated Assume Role Policy for IRSA
+   assume_role_policy = data.aws_iam_policy_document.irsa_assume_role_policy.json # Generated Assume Role Policy JSON for IRSA
  }
 
 # Attaching permissions policy to the IRSA that will give it to pull images from ECR.
@@ -95,7 +95,7 @@ resource "aws_iam_role_policy_attachment" "attachement" {
 # Create Kubernetes Service Account with IRSA annotation
 resource "kubernetes_service_account" "ecr_pull_sa" {
   metadata {
-    name      = var.service_account_name
+    name      = "${var.project}-${var.service_account_name}"
     namespace = var.service_account_namespace
     annotations = {
       "eks.amazonaws.com/role-arn" = aws_iam_role.ecr_image_pull_irsa.arn # IRSA Arn

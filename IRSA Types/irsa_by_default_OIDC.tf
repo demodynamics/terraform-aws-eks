@@ -19,7 +19,11 @@ resource "aws_iam_role" "ecr_image_pull_irsa" {
       Action = "sts:AssumeRoleWithWebIdentity",
       Condition = {
         StringEquals = {
-          "oidc.eks.us-east-1.${data.aws_caller_identity.current.account_id}:sub" = "system:serviceaccount:${kubernetes_service_account.sa.namespace}:${kubernetes_service_account.sa.name}"
+          "oidc.eks.us-east-1.${data.aws_caller_identity.current.account_id}:sub" = "system:serviceaccount:${var.service_account_name}:${var.service_account_namespace}"
+          #The IAM role (IRSA in this case) is created first using static values from variables (var.service_account_namespace and var.service_account_name)
+          #The Kubernetes service account is then created with the same values, avoiding dependency loops.
+          #Terraform can now resolve resource creation in the correct order.
+        
         }
       }
     }]
@@ -48,13 +52,11 @@ resource "aws_iam_policy" "all_ecr_pull_policy" {
   })
 }
 
-# Attaching this policy to the IRSA
+# Attaching this self-managed permissions policy to the IRSA
 resource "aws_iam_role_policy_attachment" "ecr_pull_irsa_attachment" {
   policy_arn = aws_iam_policy.all_ecr_pull_policy.arn
   role       = aws_iam_role.ecr_image_pull_irsa.name
 }
-
-
 
 # ----------------------  Creating  permissions policy for IRSA, that lets to pull images from Specific ECR Private Repository ----------------------
 resource "aws_iam_policy" "specific_ecr_pull_policy" {
@@ -79,7 +81,7 @@ resource "aws_iam_policy" "specific_ecr_pull_policy" {
     }]
   })
 }
-# Attaching this policy to the IRSA
+# Attaching this self-managed permissions policy to the IRSA
 resource "aws_iam_role_policy_attachment" "ecr_pull_irsa_attachment" {
   policy_arn = aws_iam_policy.specific_ecr_pull_policy.arn
   role       = aws_iam_role.ecr_image_pull_irsa.name
@@ -87,42 +89,51 @@ resource "aws_iam_role_policy_attachment" "ecr_pull_irsa_attachment" {
 
 
 
-
-
-
-# Generating permissions policy for IRSA, that lets to pull images from ECR Private Repository
-data "aws_iam_policy_document" "ecr_pull_policy" {
-  statement {
-    sid    = "AllowECRPull"
-    effect = "Allow"
-    actions = ["ecr:GetDownloadUrlForLayer","ecr:BatchGetImage","ecr:BatchCheckLayerAvailability","ecr:DescribeRepositories","ecr:GetAuthorizationToken"]
-
-    resources = ["*"]
-    # resources = [
-    #   "arn:aws:ecr:${var.region}:${data.aws_caller_identity.current.account_id}:repository/${var.ecr_repo}" #${data.aws_caller_identity.current.account_id}: This fetches the AWS account ID dynamically, so you don’t need to hardcode it.
-    # ]
+# Create Kubernetes Service Account with IRSA annotation
+resource "kubernetes_service_account" "ecr_pull_sa" {
+  metadata {
+    name      = var.service_account_name
+    namespace = var.service_account_namespace
+    annotations = {
+      "eks.amazonaws.com/role-arn" = aws_iam_role.ecr_image_pull_irsa.arn # IRSA Arn
+    }
   }
 }
 
+# The Service Account(s) in Kubernetes (EKS) cluster also coud be created by Deployment YAML File.
+
+(ex.`service-account.yaml`):
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: <Service Account Name> - # name ofthe service account
+  namespace: <Service Account Namespace>  # namespace in cluster in which the service account is created. We can use any custom namespace as needed.
+
+#The service account(s) attached to pods in Kuberntes Deployment YAML file through `spec.serviceAccount` field.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      serviceAccountName: <Service Account Name>  # Using the service account here
+      containers:
+      - name: my-container
+        image: <aws-account-id>.dkr.ecr.<region>.amazonaws.com/my-repository:latest
+        ports:
+        - containerPort: 8080
 */
 
 
 /*
- Inline Policies
-	Embedded directly within a user, group, or role (not reusable).
-	Used for one-off, specific permissions.
-	Example: An inline policy attached to an EC2 instance role to allow access to a specific S3 bucket.
-*/
-
-# # Attach policy (Modify as needed, e.g., S3, EKS, etc.)
-# # resource "aws_iam_policy_attachment" "s3_access" {
-# #   name       = "irsa-ecr-access"
-# #   roles      = [aws_iam_role.irsa_role.name]
-# #   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-# # }
-
-
-  /*
 # -------------------------  aws_eks_cluster.eks_cluster.identity[0].oidc[0].issuer -------------------------
 
     This is a list with one item (identity is a block in aws_eks_cluster).
@@ -221,48 +232,11 @@ entities are allowed to assume the role.
                 3.Condition
                     Condition = {
                     StringEquals = {
-                        "oidc.eks.us-east-1.amazonaws.com/id/<EKS_OIDC_ID>:sub" = "system:serviceaccount:default:ecr-access"
+                        "oidc.eks.us-east-1.amazonaws.com/id/<EKS_OIDC_ID>:sub" = "system:serviceaccount:${var.service_account_name}:${var.service_account_namespace}"
                     }
                     }
-                    This ensures that only the specific Kubernetes (EKS Cluster) service account (ecr-access in the default namespace) can 
+                    This ensures that only the specific Kubernetes (EKS Cluster) service account (var.service_account_name) in the (var.service_account_namespace) namespace can 
                     assume the role.
-
-
-
-
-The Service Account(s) in Kubernetes (EKS) cluster is/are created by Deployment YAML File.
-
-(ex.`service-account.yaml`):
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: ecr-access - # name ofthe service account
-  namespace: default  # namespace in cluster in which the service account is created. We can use any custom namespace as needed.
-
-The service account(s) attached to pods in Kuberntes Deployment YAML file through `spec.serviceAccount` field.
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: my-app
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: my-app
-  template:
-    metadata:
-      labels:
-        app: my-app
-    spec:
-      serviceAccountName: ecr-access  # Using the service account here
-      containers:
-      - name: my-container
-        image: <aws-account-id>.dkr.ecr.<region>.amazonaws.com/my-repository:latest
-        ports:
-        - containerPort: 8080
-
-
 Summary
 The entire assume_role_policy block is the OIDC Trust Relationship (trust policy) because it defines who is allowed to assume the IAM role. It ensures 
 that only the specific Kubernetes (EKS) Cluster service(s) account can use the role via that Kubernetes (EKS) cluster’s OIDC provider.
