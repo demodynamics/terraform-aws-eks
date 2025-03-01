@@ -10,8 +10,8 @@ terraform {
 
 # ---------------------------------------------------------- EKS Cluster ---------------------------------------------------------- #
 resource "aws_iam_role" "eks_cluster_role" {
-  description = "${var.project} EKS Cluster Role"
-  name = "${var.project}_eks_cluster_role"
+  description = "${var.default_tags["Project"]} EKS Cluster Role"
+  name = "${var.default_tags["Project"]}_eks_cluster_role"
   assume_role_policy = data.aws_iam_policy_document.cluster_role_assume_role_policy.json
 }
 
@@ -24,7 +24,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_role_attachment" {
 
 
 resource "aws_eks_cluster" "eks_cluster" {
-  name = "${var.project}_eks_cluster"
+  name = "${var.default_tags["Project"]}_eks_cluster"
   role_arn = aws_iam_role.eks_cluster_role.arn
 
   vpc_config {
@@ -40,8 +40,8 @@ resource "aws_eks_cluster" "eks_cluster" {
 # ---------------------------------------------------------- Node Group (Nodes) ---------------------------------------------------------- #
 
 resource "aws_iam_role" "eks_node_group_role" {
-  description = "${var.project} EKS Node group Role"
-  name = "${var.project}_eks_node_group_role"
+  description = "${var.default_tags["Project"]} EKS Node group Role"
+  name = "${var.default_tags["Project"]}_eks_node_group_role"
   assume_role_policy = data.aws_iam_policy_document.node_group_role_assume_role_policy.json
 }
 
@@ -56,7 +56,7 @@ resource "aws_iam_role_policy_attachment" "eks_node_group_role_attachment" {
 # A node group is one or more EC2 instances that are deployed in an EC2 Auto Scaling group. EKS nodes are standard Amazon EC2 instances.
 resource "aws_eks_node_group" "eks_node_group" {
   cluster_name    = aws_eks_cluster.eks_cluster.name
-  node_group_name = "${var.project}_node_goup"
+  node_group_name = "${var.default_tags["Project"]}_node_goup"
   node_role_arn   = aws_iam_role.eks_node_group_role.arn
   subnet_ids      = var.subnet_ids
   
@@ -95,7 +95,7 @@ resource "aws_iam_role_policy_attachment" "attachement" {
 # Create Kubernetes Service Account with IRSA annotation
 resource "kubernetes_service_account" "ecr_pull_sa" {
   metadata {
-    name      = "${var.project}-${var.service_account_name}"
+    name      = "${var.default_tags["Project"]}-${var.service_account_name}"
     namespace = var.service_account_namespace
     annotations = {
       "eks.amazonaws.com/role-arn" = aws_iam_role.ecr_image_pull_irsa.arn # IRSA Arn

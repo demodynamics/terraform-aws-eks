@@ -1,3 +1,6 @@
+# Obtain the name of the AWS region configured on the provider.btain the name of the AWS region configured on the provider.
+data "aws_region" "current" {}
+
 #This retrieves the current AWS account information, including the account_id dynamically.
 data "aws_caller_identity" "current" {}
 
@@ -39,7 +42,7 @@ data "aws_iam_policy_document" "irsa_assume_role_policy" {
 
     condition {
       test     = "StringEquals" # Ensures the condition must exactly match the provided values.
-      variable = "oidc.eks.${var.region}.${data.aws_caller_identity.current.account_id}:sub" # Specifies the subject claim from the OIDC token.
+      variable = "oidc.eks.${data.aws_region.current.name}.${data.aws_caller_identity.current.account_id}:sub" # Specifies the subject claim from the OIDC token.
       values   = ["system:serviceaccount:${var.service_account_namespace}:${var.service_account_name}"] # A specific Kubernetes service account is allowed to assume the role to whom will be attached this Assume Role policy (trust policy) JSON 
     }
   }

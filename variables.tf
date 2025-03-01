@@ -1,11 +1,6 @@
-variable "project" {
-  description = "Project name"
-  type = string
-}
-
-variable "region" {
-  description = "AWS region"
-  type = string
+variable "default_tags" {
+  description = "Tags that are the same for all resources"
+  type = map(string)
 }
 
 
