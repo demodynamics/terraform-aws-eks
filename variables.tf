@@ -3,35 +3,18 @@ variable "default_tags" {
   type = map(string)
 }
 
-
-variable "cluster_role_permissions_policy" {
-  description = "List of AWS managed permissions policy for Cluster Role"
-  type = list(string)
-}
-
-variable "node_group_role_permissions_policy" {
-  description = "List of AWS managed permissions policy for Node Group Role"
-  type = list(string)
-}
-
-variable "service_account_name" {
-  description = "Service Account Name for IRSA that pull images from ECR Private Repository"
-  type = string
-
-}
-variable "service_account_namespace" {
-  description = "Service Account Namespace for IRSA that pull images from ECR Private Repository"
+variable "cluster_role_arn" {
+  description = "ARN of the EKS Cluster role that will be fetched from EKS Cluster role remote state"
   type = string
 }
 
-
-variable "ecr_pull_permissions_policy" {
-  description = "An AWS managed permissions policy that wiill give IRSA to pull images from ECR Private Repository "
+variable "node_goup_role_arn" {
+  description = "ARN of the Node Group role that will be fetched from Node Group role remote state"
   type = string
 }
 
 variable "subnet_ids" {
-  description = "Subnet ID's of VPC Where the cluster and it's nodes will be created"
+  description = "Subnet ID's of VPC Where the cluster and it's nodes will be created. Will be fetched from VPC's remote state"
   type = list(string)
 }
 
@@ -59,3 +42,5 @@ variable "subnet_ids" {
    description = "EKS Node(s) Instance Type"
    type = list(string)
  }
+
+ 
